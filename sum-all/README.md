@@ -19,3 +19,11 @@ options:
   --ped-est {median,mean,mode}
                         Specify which statistical center (mean, median, mode) to use on pedestal subtraction. Default: median.
 ```
+
+## Examples
+```
+python sum_all.py /path/to/file.hdf5 --tqdm --ped-est median
+python sum_all.py /path/to/file.hdf5
+
+python sum_all.py ~/50l_setup/configs/test/50l_run000208_0000_dataflow0_datawriter_0_20231016T131047.hdf5
+```
