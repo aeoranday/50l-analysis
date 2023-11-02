@@ -11,7 +11,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-import fiftyl_toolkit
+#import fiftyl_toolkit
 
 __author__ = "Alejandro Oranday"
 __contact__ = "alejandro@oran.day"
@@ -28,12 +28,17 @@ def median_subtraction(adcs):
     """
     return (adcs - np.floor(np.median(adcs, axis=0))).astype('int')
 
+def mean_subtraction(adcs):
+    """
+    Mean subtract the ADCs.
+    """
+    return (adcs - np.floor(np.mean(adcs, axis=0))).astype('int')
+
 def mode_subtraction(adcs):
     """
-    Alternative pedestal subtraction.
+    Mode subtract the ADCs.
     """
     mode_array = np.array(stats.mode(adcs)[0])
-    #print(f"Channel {CHANNEL} Mode:", mode_array[CHANNEL])
     return (adcs - mode_array).astype('int')
 
 def plot(adcs, dt_title, event_count, run_id, use_abs=False, savetype="svg"):
@@ -78,6 +83,8 @@ def parse():
     parser.add_argument("--abs", action="store_true", help="Use to sum using absolute value.")
     parser.add_argument("--savetype", type=str, help="File type to save the figure as. Default : svg.", default="svg")
     parser.add_argument("--debug", action="store_true", help="Print some debugging information.")
+    parser.add_argument("--ped-est", choices=["median", "mean", "mode"], help="Specify which statistical center (mean, median, mode) to use on pedestal subtraction. Default: median.", default="median")
+
     args = parser.parse_args()
 
     assert (args.filename[-4:] == "hdf5"), "File name is not an HDF5 data file."
@@ -131,6 +138,14 @@ def main():
     use_abs = args.abs
     savetype = args.savetype
     debug = args.debug
+    ped_est = args.ped_est
+
+    if ped_est == "median":
+        ped_subtraction = median_subtraction
+    elif ped_est == "mode":
+        ped_subtraction = mode_subtraction
+    else:
+        ped_subtraction = median_subtraction
 
     if use_abs:
         sum_operator = np.abs
@@ -157,8 +172,8 @@ def main():
         except ValueError:
             mismatch += 1
         if tmp_adc.shape[0] >= adcs.shape[0]:
-            mode_subbed = mode_subtraction(tmp_adc[:adcs.shape[0], :])
-            adcs += sum_operator(mode_subbed)
+            ped_subbed = ped_subtraction(tmp_adc[:adcs.shape[0], :])
+            adcs += sum_operator(ped_subbed)
 
     print("Total mismatched:", mismatch)
     num_events = len(records) -  mismatch
