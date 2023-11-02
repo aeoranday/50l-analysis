@@ -1,0 +1,6 @@
+*.svg
+*.png
+*.jpg
+*.npy
+*figures
+saved_arrays
