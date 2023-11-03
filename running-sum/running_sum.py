@@ -18,34 +18,6 @@ DT_FORMAT = "%Y%m%dT%H%M%S" # datetime format from hdf5 files.
 
 FIGURE_PATH = "./figures"
 
-def extract_adcs(h5_file, record):
-    wib_geo_ids = h5_file.get_geo_ids(record)
-    adcs = np.zeros( (len(wib_geo_ids) * CHANNELS_PER_WIB, FRAMES_PER_RECORD), dtype='int64' )
-
-    for i, gid in enumerate(wib_geo_ids):
-        frag = h5_file.get_frag(record, gid)
-        frag_type = frag.get_fragment_type()
-        if (frag_type != daqdataformats.FragmentType.kWIBEth):
-            continue
-
-        det_link = 0xffff & (gid >> 48)
-
-        tmp_adc = np_array_adc(frag)
-        if tmp_adc.shape[0] < FRAMES_PER_RECORD:
-            continue
-        tmp_adc = tmp_adc[:FRAMES_PER_RECORD, :]
-
-        for ch in range(CHANNELS_PER_WIB):
-            mapped_ch = CH_MAP.index(det_link * 64 + ch)
-            adcs[mapped_ch, :] = tmp_adc.T[ch, :]
-
-    return adcs
-
-def plot_wf(wf):
-    plt.figure()
-    plt.plot(wf)
-    plt.savefig("test.svg")
-
 def plot(run_sum, wf, channel, record_id, run_time, run_id, savetype):
     """
     Plot the running sum.
@@ -116,7 +88,7 @@ def main():
     wf = median_subtraction(wf)
     original_wf = wf.copy()
     for idx in range(1,len(wf)):
-        wf[idx] = wf[idx] + wf[idx-1] + 0.5
+        wf[idx] = wf[idx] + wf[idx-1]
 
     plot(wf, original_wf, channel, record_id, run_time, run_id, savetype)
 
