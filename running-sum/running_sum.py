@@ -9,12 +9,6 @@ import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
-import daqdataformats
-import detdataformats
-import detchannelmaps
-import fddetdataformats
-from hdf5libs import HDF5RawDataFile
-from rawdatautils.unpack.wibeth import np_array_adc
 import fiftyl_toolkit
 
 __author__ = "Alejandro Oranday"
