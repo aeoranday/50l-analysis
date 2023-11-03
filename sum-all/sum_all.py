@@ -174,6 +174,8 @@ def main():
         if tmp_adc.shape[0] >= adcs.shape[0]:
             ped_subbed = ped_subtraction(tmp_adc[:adcs.shape[0], :])
             adcs += sum_operator(ped_subbed)
+        else:
+            mismatch += 1
 
     print("Total mismatched:", mismatch)
     num_events = len(records) -  mismatch
