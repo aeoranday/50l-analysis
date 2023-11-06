@@ -77,7 +77,7 @@ def plot(adcs, dt_title, event_count, run_id, use_abs=False, savetype="svg"):
     plt.close()
 
 def parse():
-    parser = argparse.ArgumentParser(description="Sum non-cosmic events, plot the resulting heatmap, and save this array.")
+    parser = argparse.ArgumentParser(description="Sum all events in a dataset and plot as a heatmap.")
     parser.add_argument("filename", help="Absolute path of file to process. Must be an HDF5 data file.")
     parser.add_argument("--tqdm", action="store_true", help="Use to display tqdm progress bar. Default off.")
     parser.add_argument("--abs", action="store_true", help="Use to sum using absolute value.")

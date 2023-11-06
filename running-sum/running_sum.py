@@ -64,7 +64,7 @@ def median_subtraction(adcs):
     return (adcs - np.floor(np.median(adcs, axis=0))).astype('int')
 
 def parse():
-    parser = argparse.ArgumentParser(description="Sum non-cosmic events, plot the resulting heatmap, and save this array.")
+    parser = argparse.ArgumentParser(description="Generate the running sum for a given channel's waveform.")
     parser.add_argument("filename", help="Absolute path of file to process. Must be an HDF5 data file.")
     parser.add_argument("--savetype", type=str, help="File type to save the figure as. Default : svg.", default="svg")
     parser.add_argument("--channel", type=int, help="Channel to operate the running sum on. Default = 24.", default=24)

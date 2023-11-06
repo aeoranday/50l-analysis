@@ -5,7 +5,7 @@ Sum all records within a data file and plot as a heatmap with summed ADC (z), ch
 $ python sum_all.py --help
 usage: sum_all.py [-h] [--tqdm] [--abs] [--savetype SAVETYPE] [--debug] [--ped-est {median,mean,mode}] filename
 
-Sum non-cosmic events, plot the resulting heatmap, and save this array.
+Sum all events in a dataset and plot as a heatmap.
 
 positional arguments:
   filename              Absolute path of file to process. Must be an HDF5 data file.

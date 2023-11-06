@@ -5,7 +5,7 @@ Perform a running sum on a given waveform given the data file, trigger record ID
 $ python running_sum.py --help
 usage: running_sum.py [-h] [--savetype SAVETYPE] [--channel CHANNEL] [--record RECORD] [--mini] filename
 
-Sum non-cosmic events, plot the resulting heatmap, and save this array.
+Generate the running sum for a given channel's waveform.
 
 positional arguments:
   filename             Absolute path of file to process. Must be an HDF5 data file.
