@@ -70,12 +70,12 @@ def main():
 
     ### Extract Data
     data = fiftyl_toolkit.Data(h5_file_name)
-    records = data.get_records()[record_id]
+    record = data.get_records()[record_id]
     run_time = data.get_datetime()
     run_id = data.get_run_id()
 
     ### Processing & Plotting
-    adcs = data.extract(record, channel)
+    wf = data.extract(record, channel)
     wf = median_subtract(wf)
     wf_plot(wf, run_time, run_id, record_id, channel, savetype)
 
