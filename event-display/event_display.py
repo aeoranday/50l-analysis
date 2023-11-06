@@ -18,9 +18,9 @@ FIGURE_PATH = "./figures"
 
 DT_FORMAT = "%Y%m%dT%H%M%S"
 
-def ped_sub(adcs):
+def median_subtraction(adcs):
     """
-    Pedestal subtract the ADCs.
+    Median subtract the ADCs.
     """
     return (adcs - np.floor(np.median(adcs, axis=0))).astype('int')
 
@@ -87,7 +87,7 @@ def plot(adcs, dt_title, run_id, trig_id, savetype):
 def parse():
     parser = argparse.ArgumentParser(description="Plot a snapshot from the specified HDF5 file and trigger ID.")
     parser.add_argument("filename", help="Absolute path of file to process. Must be an HDF5 data file.")
-    parser.add_argument('-t', type=int, help="Trigger Record ID to plot. 0-index", default=0, metavar='n')
+    parser.add_argument('--record', type=int, help="Trigger Record ID to plot. 0-index", default=0, metavar='n')
     parser.add_argument("--save-all", action="store_true", help="Pass to save snapshots of all trigger IDs")
     parser.add_argument("--tqdm", action="store_true", help="Display tqdm progress bar. Only used for --save-all.")
     parser.add_argument("--savetype", type=str, help="Specify the format to save the figure as. Default: svg.", default="svg")
@@ -95,7 +95,7 @@ def parse():
     args = parser.parse_args()
 
     assert (args.filename[-4:] == "hdf5"), "File name is not an HDF5 data file."
-    if (args.t != -1 and args.save_all):
+    if (args.record != -1 and args.save_all):
         print("Gave a trigger ID and save-all; saving all.")
 
     return args
@@ -104,7 +104,7 @@ def main():
     args = parse()
 
     h5_file_name = args.filename
-    trig_id = args.t
+    trig_id = args.record
     save_all = args.save_all
     use_tqdm = args.tqdm
     savetype = args.savetype
@@ -122,7 +122,7 @@ def main():
     if save_all:
         for trig_id, record in tqdm(enumerate(records), total=len(records), disable=not use_tqdm, desc="Records"):
             adcs = data.extract(record)
-            adcs = ped_sub(adcs)
+            adcs = median_subtraction(adcs)
             if use_subplots:
                 subplot(adcs, run_time, run_id, trig_id, savetype)
             else:
@@ -132,7 +132,7 @@ def main():
     # Not save_all case
     record = records[trig_id]
     adcs = data.extract(record)
-    adcs = ped_sub(adcs)
+    adcs = median_subtraction(adcs)
 ##    Coherent noise "removal" test.    ##
 #   baseline = np.sum(adcs, axis=1) / 128 # Should be of size (3200,1)
 #   print("Baseline shape", baseline.shape)
