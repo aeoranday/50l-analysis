@@ -3,7 +3,7 @@ Perform a running sum on a given waveform given the data file, trigger record ID
 
 ```
 $ python running_sum.py --help
-usage: running_sum.py [-h] [--savetype SAVETYPE] [--channel CHANNEL] [--record RECORD] filename
+usage: running_sum.py [-h] [--savetype SAVETYPE] [--channel CHANNEL] [--record RECORD] [--mini] filename
 
 Sum non-cosmic events, plot the resulting heatmap, and save this array.
 
@@ -15,6 +15,7 @@ options:
   --savetype SAVETYPE  File type to save the figure as. Default : svg.
   --channel CHANNEL    Channel to operate the running sum on. Default = 24.
   --record RECORD      Trigger Record ID to operate the running sum on. Default = 0.
+  --mini               Include a mini-figure of the original waveform. Default = False.
 ```
 
 ## Example

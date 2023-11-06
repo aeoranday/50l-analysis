@@ -76,13 +76,13 @@ def parse():
     assert (args.filename[-4:] == "hdf5"), "File name is not an HDF5 data file."
     return args
 
-def mkdirs():
+def mkdirs(path):
     """
     Check if the save dirs are made. If not, make them.
     """
-    if not os.path.isdir(FIGURE_PATH):
-        print(f"Saving figures to {FIGURE_PATH}.")
-        os.makedirs(FIGURE_PATH)
+    if not os.path.isdir(path):
+        print(f"Saving figures to {path}.")
+        os.makedirs(path)
 
 def main():
     ### Process Arguments
@@ -94,7 +94,11 @@ def main():
     record_id = args.record
     mini_wf = args.mini
 
-    mkdirs()
+    if mini_wf:
+        global FIGURE_PATH
+        FIGURE_PATH += '/mini-wf'
+
+    mkdirs(FIGURE_PATH)
 
     ### Extract Data
     data = fiftyl_toolkit.Data(filename)
