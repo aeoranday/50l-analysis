@@ -4,3 +4,5 @@
 *.npy
 *figures
 saved_arrays
+*.pdf
+*.tar*
