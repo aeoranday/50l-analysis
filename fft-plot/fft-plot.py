@@ -2,35 +2,27 @@
 Plot a single FFT plot for some trigger ID.
 """
 import os
-import sys
 import argparse
 from datetime import datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-import daqdataformats
-import fddetdataformats
-from hdf5libs import HDF5RawDataFile
-from rawdatautils.unpack.wibeth import np_array_adc
+import fiftyl_toolkit
+
 
 __author__ = "Alejandro Oranday"
 __contact__ = "alejandro@oran.day"
 
-DT_FORMAT = "%Y%m%dT%H%M%S" # datetime format from hdf5 files.
 FIGURE_PATH = "./figures"
 
-FRAMES_PER_RECORD = 2240
-TOTAL_CHANNELS = 128
-CHANNELS_PER_WIB = 64
-
-CH_MAP = [112, 113, 115, 116, 118, 119, 120, 121, 123, 124, 126, 127, 64, 65, 67, 68, 70, 71, 72, 73, 75, 76, 78, 79, 48, 49, 51, 52, 54, 55, 56, 57, 59, 60, 62, 63, 0, 1, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15, 50, 53, 58, 61, 2, 5, 10, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 114, 117, 122, 125, 66, 69, 74, 77]
 
 def pedsub(adcs):
     """
     Pedestal subtract the ADCs.
     """
     return (adcs.T - np.floor(np.median(adcs, axis=1))).T.astype('int')
+
 
 def extract_adcs(h5_file, record):
     wib_geo_ids = h5_file.get_geo_ids(record)
@@ -55,25 +47,34 @@ def extract_adcs(h5_file, record):
 
     return adcs
 
-def fft_plot(fft, dt_title, ch_num):
+
+def plot_fft(fft, num_ticks, run_id, file_index, timestamp, ch_num):
     """
     Plot the FFT plot for the given adc.
     """
-    plt.figure()
-    freq = np.fft.rfftfreq(FRAMES_PER_RECORD, d=512e-9)
+    freq = np.fft.rfftfreq(2900, d=512e-9)
+
+    plt.figure(figsize=(6, 4), dpi=300)
     plt.plot(freq[1:], fft[1:].real, 'k')
     #plt.xlim((0,1e6))
     plt.yscale('symlog')
+
+    plt.title(f"FFT: Induction Plane\n{run_id:05}.{file_index:04}")
     plt.xlabel("FFT Frequency (Hz)")
-    plt.title("Channel {}-{} Sum FFT: {}".format(ch_num, ch_num+10, str(dt_title)))
-    plt.savefig(os.path.join(FIGURE_PATH, "fft{}_{}.svg".format(ch_num, dt_title.strftime(DT_FORMAT))))
+
+    plt.tight_layout()
+    plt.savefig(f"fft_{run_id:06}.{file_index:04}.png")
     plt.close()
+    return
+
 
 def parse():
     parser = argparse.ArgumentParser(description="Plot the channel FFT for an event.")
     parser.add_argument("filename", help="Absolute path of the file to process.")
     parser.add_argument("-c", type=int, help="Channel number to start sum from. Default: 24", default=24)
+    parser.add_argument("--map-name", type=str, help="Channel map name to use.")
     return parser.parse_args()
+
 
 def main():
     args = parse()
@@ -84,21 +85,29 @@ def main():
 
     h5_file_name = args.filename
     ch_num = args.c
+    map_name = args.map_name
 
-    h5_file = HDF5RawDataFile(h5_file_name)
-    records = h5_file.get_all_record_ids()
-    run_time = datetime.strptime(h5_file_name.split("_")[-1].split(".")[0], DT_FORMAT)
+    reader = fiftyl_toolkit.WIBEthReader(h5_file_name, map_name)
+    records = reader.records
+    run_time = reader.creation_timestamp
+    run_id = reader.run_id
+    file_index = reader.file_index
 
-    fft_sum = np.zeros((FRAMES_PER_RECORD // 2 + 1,))
+    fft_sum = None#np.zeros((FRAMES_PER_RECORD // 2 + 1,))
     for record in records:
-        adcs = extract_adcs(h5_file, record)
+        adcs = reader.read_record(record)
 
-        for idx in range(ch_num, ch_num+10):
-            fft = np.fft.rfft(adcs[idx,:])
-            fft_sum += np.abs(fft.real)
+        for idx in range(10, 50):
+            fft = np.fft.rfft(adcs[:2900, idx])
+            if fft_sum is None:
+                fft_sum = np.abs(fft.real)
+            else:
+                fft_sum += np.abs(fft.real)
+    num_ticks = adcs.shape[0]
 
-    fft_plot(fft_sum / len(records), run_time, ch_num)
-    sys.exit(0)
+    plot_fft(fft_sum / len(records), num_ticks, run_id, file_index, run_time, ch_num)
+    return
+
 
 if __name__ == "__main__":
     main()
