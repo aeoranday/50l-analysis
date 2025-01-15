@@ -48,7 +48,7 @@ def extract_adcs(h5_file, record):
     return adcs
 
 
-def plot_fft(fft, num_ticks, run_id, file_index, timestamp, ch_num):
+def plot_fft(fft, num_ticks, run_id, file_index, timestamp, induction):
     """
     Plot the FFT plot for the given adc.
     """
@@ -56,14 +56,21 @@ def plot_fft(fft, num_ticks, run_id, file_index, timestamp, ch_num):
 
     plt.figure(figsize=(6, 4), dpi=300)
     plt.plot(freq[1:], fft[1:].real, 'k')
+
     #plt.xlim((0,1e6))
     plt.yscale('symlog')
 
-    plt.title(f"FFT: Induction Plane\n{run_id:05}.{file_index:04}")
+    if induction:
+        title = f"FFT: Induction Plane\n{run_id:05}.{file_index:04}"
+    else:
+        title = f"FFT: Collection Plane\n{run_id:05}.{file_index:04}"
+
+    plt.title(title)
     plt.xlabel("FFT Frequency (Hz)")
 
+    saveplane = "ind" if induction else "coll"
     plt.tight_layout()
-    plt.savefig(f"fft_{run_id:06}.{file_index:04}.png")
+    plt.savefig(f"{FIGURE_PATH}/fft-{saveplane}_{run_id:06}.{file_index:04}.png")
     plt.close()
     return
 
@@ -72,6 +79,7 @@ def parse():
     parser = argparse.ArgumentParser(description="Plot the channel FFT for an event.")
     parser.add_argument("filename", help="Absolute path of the file to process.")
     parser.add_argument("-c", type=int, help="Channel number to start sum from. Default: 24", default=24)
+    parser.add_argument("--induction", action="store_true", help="Plot the induction plane channels instead of the collection plane.")
     parser.add_argument("--map-name", type=str, help="Channel map name to use.")
     return parser.parse_args()
 
@@ -85,6 +93,7 @@ def main():
 
     h5_file_name = args.filename
     ch_num = args.c
+    induction = args.induction
     map_name = args.map_name
 
     reader = fiftyl_toolkit.WIBEthReader(h5_file_name, map_name)
@@ -97,7 +106,8 @@ def main():
     for record in records:
         adcs = reader.read_record(record)
 
-        for idx in range(10, 50):
+        channel_range = range(10, 50) if induction else range(74, 114)
+        for idx in channel_range:
             fft = np.fft.rfft(adcs[:2900, idx])
             if fft_sum is None:
                 fft_sum = np.abs(fft.real)
@@ -105,7 +115,7 @@ def main():
                 fft_sum += np.abs(fft.real)
     num_ticks = adcs.shape[0]
 
-    plot_fft(fft_sum / len(records), num_ticks, run_id, file_index, run_time, ch_num)
+    plot_fft(fft_sum / len(records), num_ticks, run_id, file_index, run_time, induction)
     return
 
 
