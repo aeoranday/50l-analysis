@@ -52,7 +52,7 @@ def plot_fft(fft, num_ticks, run_id, file_index, timestamp, induction):
     """
     Plot the FFT plot for the given adc.
     """
-    freq = np.fft.rfftfreq(2900, d=512e-9)
+    freq = np.fft.rfftfreq(600, d=512e-9)
 
     plt.figure(figsize=(6, 4), dpi=300)
     plt.plot(freq[1:], fft[1:].real, 'k')
@@ -108,11 +108,14 @@ def main():
 
         channel_range = range(10, 50) if induction else range(74, 114)
         for idx in channel_range:
-            fft = np.fft.rfft(adcs[:2900, idx])
+            fft = np.fft.rfft(adcs[:600, idx])
             if fft_sum is None:
                 fft_sum = np.abs(fft.real)
             else:
-                fft_sum += np.abs(fft.real)
+                try:
+                    fft_sum += np.abs(fft.real)
+                except ValueError:
+                    raise ValueError("Time sizing of ADCs is not as expected.")
     num_ticks = adcs.shape[0]
 
     plot_fft(fft_sum / len(records), num_ticks, run_id, file_index, run_time, induction)
