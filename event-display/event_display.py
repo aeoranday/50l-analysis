@@ -85,7 +85,7 @@ def plot(adcs, timestamp, run_id, file_index, trig_id, savetype):
 
     plt.figure(figsize=(6, 4), dpi=300)
 
-    plt.imshow(adcs[:250, :], vmin=-AMPLITUDE_MAX, vmax=AMPLITUDE_MAX, aspect='auto')#, interpolation='none')
+    plt.imshow(adcs, vmin=-AMPLITUDE_MAX, vmax=AMPLITUDE_MAX, aspect='auto')#, interpolation='none')
 
     plt.title(f"50L Event Display {run_id}.{file_index}-{trig_id}:\nTimestamp {timestamp}")
     plt.xlabel("Channel")
