@@ -78,14 +78,14 @@ def main():
     map_name = args.map_name
 
     ### Extract Data
-    data = fiftyl_toolkit.Data(h5_file_name, map_name)
+    data = fiftyl_toolkit.WIBEthReader(h5_file_name, map_name)
     record = data.records[record_id]
     timestamp = data.creation_timestamp
     run_id = data.run_id
     file_index = data.file_index
 
     ### Processing & Plotting
-    wf = data.extract(record, channel)
+    wf = data.read_record(record, channel)
     wf = median_subtract(wf)
     wf_plot(wf, timestamp, run_id, file_index, record_id, channel, savetype)
 
